@@ -1,0 +1,11 @@
+# Secretos y datos personales — nunca subir esto
+credentials.json
+token.json
+config.py
+
+# Entorno y artefactos locales
+venv/
+__pycache__/
+*.pyc
+log.txt
+*.log

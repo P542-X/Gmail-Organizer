@@ -1,0 +1,20 @@
+[Unit]
+Description=Organizador automatico de Gmail (PayPal, Uber, Revolut, BBVA, etc.)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Cambia esto por tu usuario del sistema
+User=TU_USUARIO
+# Cambia esto por la ruta real donde tengas el proyecto
+WorkingDirectory=/ruta/a/gmail-organizer
+Environment=GMAIL_ORGANIZER_LOOP=1
+Environment=GMAIL_ORGANIZER_INTERVAL=300
+# Environment=GMAIL_ORGANIZER_FULL_BODY=1
+ExecStart=/ruta/a/gmail-organizer/venv/bin/python3 /ruta/a/gmail-organizer/gmail_organizer.py
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
