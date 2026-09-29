@@ -254,6 +254,37 @@ def get_header(headers, name):
 # ---------------------------------------------------------------------------
 
 
+def notify_token_expired(error):
+    """Avisa por email de que el token OAuth ha caducado.
+    Configurable con GMAIL_ALERT_TO, GMAIL_APP_PASSWORD y GMAIL_ALERT_NAME
+    (variables de entorno). Si faltan, solo lo escribe en el log."""
+    to_addr = os.environ.get("GMAIL_ALERT_TO")
+    app_password = os.environ.get("GMAIL_APP_PASSWORD")
+    if not to_addr or not app_password:
+        print("Token caducado; aviso por email no configurado.", file=sys.stderr)
+        return
+    import smtplib
+    from email.mime.text import MIMEText
+    name = os.environ.get("GMAIL_ALERT_NAME", "")
+    greeting = f"Hola {name}," if name else "Hola,"
+    body = (f"{greeting}\n\nEl token de Gmail ha caducado y necesita renovarse.\n\n"
+            f"Error: {error}\n\nEjecuta en el servidor:\n"
+            "  cd ~/Desktop/GMAIL && source venv/bin/activate && rm token.json && python3 gmail_organizer.py\n"
+            "Luego: sudo systemctl restart organizador-gmail.service")
+    msg = MIMEText(body)
+    prefix = f"{name} — " if name else ""
+    msg["Subject"] = f"⚠️ {prefix}Token Gmail caducado — acción requerida"
+    msg["From"] = to_addr
+    msg["To"] = to_addr
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as s:
+            s.starttls()
+            s.login(to_addr, app_password)
+            s.sendmail(to_addr, [to_addr], msg.as_string())
+    except Exception as mail_error:
+        print(f"No se pudo enviar el aviso: {mail_error}", file=sys.stderr)
+
+
 def get_service():
     creds = None
     if os.path.exists(TOKEN_FILE):
@@ -261,7 +292,11 @@ def get_service():
 
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+            try:
+                creds.refresh(Request())
+            except Exception as e:
+                notify_token_expired(e)
+                raise
         else:
             if not os.path.exists(CREDENTIALS_FILE):
                 sys.exit(

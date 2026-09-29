@@ -9,3 +9,10 @@ __pycache__/
 *.pyc
 log.txt
 *.log
+.env
+token.json
+token.json.bak
+credentials.json
+*.bak
+organizador-gmail.service
+config.py
