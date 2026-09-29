@@ -170,3 +170,29 @@ crontab -e
 ## Licencia
 
 MIT — ver [LICENSE](LICENSE).
+
+## Aviso por email cuando caduca el token
+
+Si Google revoca o deja caducar el token OAuth (`invalid_grant`), el organizador puede enviarte un correo con los pasos para renovarlo antes de detenerse. Es opcional: si no configuras estas variables, el error solo queda en el log.
+
+| Variable | Descripción |
+|---|---|
+| `GMAIL_ALERT_TO` | Dirección que envía y recibe el aviso (tu cuenta de Gmail) |
+| `GMAIL_APP_PASSWORD` | Contraseña de aplicación de esa cuenta (https://myaccount.google.com/apppasswords, requiere verificación en 2 pasos) |
+| `GMAIL_ALERT_NAME` | Opcional. Nombre para el saludo y el asunto del correo |
+
+Guárdalas en un fichero `.env` (ya está en `.gitignore`, no se sube al repositorio):
+
+~~~
+GMAIL_ALERT_TO=tu_correo@gmail.com
+GMAIL_APP_PASSWORD=xxxxxxxxxxxxxxxx
+GMAIL_ALERT_NAME=TuNombre
+~~~
+
+Protégelo con `chmod 600 .env` y cárgalo en el servicio añadiendo esta línea en la sección `[Service]` de `organizador-gmail.service`:
+
+~~~
+EnvironmentFile=/ruta/al/proyecto/.env
+~~~
+
+Después ejecuta `sudo systemctl daemon-reload && sudo systemctl restart organizador-gmail.service`.
